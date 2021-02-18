@@ -1,0 +1,7 @@
+.idea
+cmake-build-debug
+textures
+lib
+include/GL
+include/glm
+include/GLFW
