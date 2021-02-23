@@ -1,6 +1,0 @@
-C:/Users/AlNov/Desktop/Code/draw/cmake-build-release/CMakeFiles/draw.dir
-C:/Users/AlNov/Desktop/Code/draw/cmake-build-release/CMakeFiles/edit_cache.dir
-C:/Users/AlNov/Desktop/Code/draw/cmake-build-release/CMakeFiles/rebuild_cache.dir
-C:/Users/AlNov/Desktop/Code/draw/cmake-build-release/lib/soil/CMakeFiles/soil.dir
-C:/Users/AlNov/Desktop/Code/draw/cmake-build-release/lib/soil/CMakeFiles/edit_cache.dir
-C:/Users/AlNov/Desktop/Code/draw/cmake-build-release/lib/soil/CMakeFiles/rebuild_cache.dir

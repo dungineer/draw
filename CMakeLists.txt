@@ -12,7 +12,7 @@ message(STATUS "OPENGL_FOUND:= ${OPENGL_FOUND}")
 message(STATUS "OPENGL_LIBRARY:= ${OPENGL_LIBRARY}")
 message(STATUS "OPENGL_LIBRARIES:= ${OPENGL_LIBRARIES}")
 
-add_executable(draw main.cpp include/shader.h include/texture.h include/camera.h include/cube.h include/lamp.h include/mesh.h include/model.h)
+add_executable(draw main.cpp include/shader.h include/texture.h include/camera.h include/object.h include/lamp.h include/mesh.h include/model.h)
 add_subdirectory(lib/soil)
 target_include_directories(draw PUBLIC ${CMAKE_SOURCE_DIR}/include lib/soil/inc lib/assimp/include)
 target_link_libraries(draw ${GLEW_PATH} ${GLFW3_PATH} ${OPENGL_LIBRARIES} ${assimp_PATH} soil)

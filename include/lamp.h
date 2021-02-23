@@ -10,19 +10,19 @@
 class Lamp {
 public:
     Lamp(glm::vec3 pos, glm::vec3 clr, GLuint number) :
-            position(pos),
-            color(clr),
-            formName("pointLights[" + std::to_string(number) + "]"),
-            model(glm::scale(glm::translate(glm::mat4(1.0f), pos), glm::vec3(0.2f))) {
-        lampUniform.position = formName + ".position";
+            position_(pos),
+            color_(clr),
+            form_name_("pointLights[" + std::to_string(number) + "]"),
+            model_(glm::scale(glm::translate(glm::mat4(1.0f), pos), glm::vec3(0.2f))) {
+        lamp_uniform_.position = form_name_ + ".position";
 
-        lampUniform.constant = formName + ".constant";
-        lampUniform.linear = formName + ".linear";
-        lampUniform.quadratic = formName + ".quadratic";
+        lamp_uniform_.constant = form_name_ + ".constant";
+        lamp_uniform_.linear = form_name_ + ".linear";
+        lamp_uniform_.quadratic = form_name_ + ".quadratic";
 
-        lampUniform.ambient = formName + ".ambient";
-        lampUniform.diffuse = formName + ".diffuse";
-        lampUniform.specular = formName + ".specular";
+        lamp_uniform_.ambient = form_name_ + ".ambient";
+        lamp_uniform_.diffuse = form_name_ + ".diffuse";
+        lamp_uniform_.specular = form_name_ + ".specular";
     };
 
     static void staticInit(const GLfloat *vertices, GLuint64 ver_size, const GLuint *indices, GLuint64 ind_size);
@@ -31,11 +31,11 @@ public:
 
     void draw(GLuint program, const glm::mat4 &view, const glm::mat4 &projection) const;
 
-    void use(GLuint program,  const Camera &) const;
+    void use(const Shader &shader) const;
 
     [[maybe_unused]] void setPos(glm::vec3 &&);
 
-    [[nodiscard]] glm::vec3 getPos() const { return position; }
+    [[nodiscard]] glm::vec3 getPos() const { return position_; }
 
 private:
     struct {
@@ -48,13 +48,13 @@ private:
         std::string ambient;
         std::string diffuse;
         std::string specular;
-    } lampUniform;
+    } lamp_uniform_;
 
-    glm::vec3 position;
-    glm::vec3 color;
-    glm::mat4 model;
+    glm::vec3 position_;
+    glm::vec3 color_;
+    glm::mat4 model_;
 
-    std::string formName;
+    std::string form_name_;
 
     static GLuint VBO;
     static GLuint EBO;
@@ -87,10 +87,10 @@ void Lamp::staticInit(const GLfloat *vertices, GLuint64 ver_size, const GLuint *
 }
 
 void Lamp::draw(GLuint program, const glm::mat4 &view, const glm::mat4 &projection) const {
-    glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model_));
     glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-    glUniform3f(glGetUniformLocation(program, "lightColor"), color.x, color.y, color.z);
+    glUniform3f(glGetUniformLocation(program, "lightColor"), color_.x, color_.y, color_.z);
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -104,20 +104,62 @@ void Lamp::staticDeinit() {
 }
 
 void Lamp::setPos(glm::vec3 &&newPos) {
-    position = newPos;
-    model = glm::translate(glm::mat4(1.0f), newPos);
+    position_ = newPos;
+    model_ = glm::translate(glm::mat4(1.0f), newPos);
 }
 
-void Lamp::use(GLuint program, const Camera &camera) const {
-    glUniform3f(glGetUniformLocation(program, lampUniform.position.c_str()), position.x, position.y, position.z);
+void Lamp::use(const Shader &shader) const {
+    glUniform3f(glGetUniformLocation(shader.program, lamp_uniform_.position.c_str()), position_.x, position_.y, position_.z);
 
-    glUniform3f(glGetUniformLocation(program, lampUniform.ambient.c_str()), color.r / 5, color.g / 5, color.b / 5);
-    glUniform3f(glGetUniformLocation(program, lampUniform.diffuse.c_str()), color.r / 2, color.g / 2, color.b / 2);
-    glUniform3f(glGetUniformLocation(program, lampUniform.specular.c_str()), color.r / 1, color.g / 1, color.b / 1);
+    glUniform3f(glGetUniformLocation(shader.program, lamp_uniform_.ambient.c_str()), color_.r / 5, color_.g / 5, color_.b / 5);
+    glUniform3f(glGetUniformLocation(shader.program, lamp_uniform_.diffuse.c_str()), color_.r / 2, color_.g / 2, color_.b / 2);
+    glUniform3f(glGetUniformLocation(shader.program, lamp_uniform_.specular.c_str()), color_.r / 1, color_.g / 1, color_.b / 1);
 
-    glUniform1f(glGetUniformLocation(program, lampUniform.constant.c_str()),  1.0f);
-    glUniform1f(glGetUniformLocation(program, lampUniform.linear.c_str()),  0.09f);
-    glUniform1f(glGetUniformLocation(program, lampUniform.quadratic.c_str()), 0.032f);
+    glUniform1f(glGetUniformLocation(shader.program, lamp_uniform_.constant.c_str()), 1.0f);
+    glUniform1f(glGetUniformLocation(shader.program, lamp_uniform_.linear.c_str()), 0.03f);
+    glUniform1f(glGetUniformLocation(shader.program, lamp_uniform_.quadratic.c_str()), 0.015f);
+}
+
+class DirLamp {
+public:
+    DirLamp(glm::vec3 dir, glm::vec3 clr, GLuint number) :
+            direction_(dir),
+            color_(clr),
+            form_name_("dirLights[" + std::to_string(number) + "]") {
+        lamp_uniform_.direction = form_name_ + ".direction";
+
+        lamp_uniform_.ambient = form_name_ + ".ambient";
+        lamp_uniform_.diffuse = form_name_ + ".diffuse";
+        lamp_uniform_.specular = form_name_ + ".specular";
+    };
+
+    void use(const Shader &shader) const;
+
+    [[maybe_unused]] void setDir(glm::vec3 &&direction) { direction_ = direction; }
+
+    [[nodiscard]] glm::vec3 getDir() const { return direction_; }
+
+private:
+    struct {
+        std::string direction;
+
+        std::string ambient;
+        std::string diffuse;
+        std::string specular;
+    } lamp_uniform_;
+
+    glm::vec3 direction_;
+    glm::vec3 color_;
+
+    std::string form_name_;
+};
+
+void DirLamp::use(const Shader &shader) const {
+    glUniform3f(glGetUniformLocation(shader.program, lamp_uniform_.direction.c_str()), direction_.x, direction_.y, direction_.z);
+
+    glUniform3f(glGetUniformLocation(shader.program, lamp_uniform_.ambient.c_str()), color_.r / 5, color_.g / 5, color_.b / 5);
+    glUniform3f(glGetUniformLocation(shader.program, lamp_uniform_.diffuse.c_str()), color_.r / 2, color_.g / 2, color_.b / 2);
+    glUniform3f(glGetUniformLocation(shader.program, lamp_uniform_.specular.c_str()), color_.r / 1, color_.g / 1, color_.b / 1);
 }
 
 

@@ -10,9 +10,9 @@
 
 class Camera {
 public:
-    Camera(const glm::vec3 &pos, const glm::vec3 &front, GLint screenWidth, GLint screenHeight) :
+    Camera(glm::vec3 pos, GLint screenWidth, GLint screenHeight) :
             pos(pos),
-            front(front),
+            front(glm::vec3(0.0f, 0.0f, -1.0f)),
             up(glm::vec3(0.0f, 1.0f, 0.0f)),
             view(glm::mat4(1.0f)),
             projection(glm::mat4(1.0f)),
@@ -29,7 +29,7 @@ public:
 
     void scroll(GLdouble yoffset);
 
-    void update(GLuint program);
+    void update(const Shader &shader);
 
     [[nodiscard]] const glm::mat4 &getView() const { return view; }
 
@@ -46,9 +46,9 @@ private:
     GLfloat sense = 0.05f;
     GLfloat zoom = 45.0f;
 
-    glm::vec3 pos = glm::vec3(0.0f, 0.0f, 3.0f);
-    glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 pos;
+    glm::vec3 front;
+    glm::vec3 up;
 
     glm::mat4 view;
     glm::mat4 projection;
@@ -92,8 +92,8 @@ void Camera::scroll(GLdouble yoffset) {
         zoom = 45.0f;
 }
 
-void Camera::update(GLuint program) {
-    glUniform3f(glGetUniformLocation(program, "viewPos"), pos.x, pos.y, pos.z);
+void Camera::update(const Shader &shader) {
+    glUniform3f(glGetUniformLocation(shader.program, "viewPos"), pos.x, pos.y, pos.z);
 
     projection = glm::perspective(glm::radians(zoom), width / height, 0.1f, 100.0f);
     view = glm::lookAt(pos, pos + front, up);

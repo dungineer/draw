@@ -18,7 +18,7 @@ class Model {
 public:
 
     explicit Model(const std::filesystem::path &path)
-            : directory_(path) {
+            : directory_(path.parent_path()) {
         loadModel(path);
     }
 
@@ -33,7 +33,7 @@ private:
 
     void processNode(aiNode *node, const aiScene *scene);
 
-    Mesh processMesh(aiMesh *mesh, const aiScene *scene);
+    Mesh processMesh(const aiMesh *mesh, const aiScene *scene);
 
     std::vector<TextureStruct> loadMaterialTextures(aiMaterial *mat, aiTextureType type, const std::string &typeName);
 
@@ -43,20 +43,19 @@ private:
 void Model::loadModel(const std::filesystem::path &path) {
     Assimp::Importer import;
 
-    const aiScene *scene = import.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene *scene = import.ReadFile(path.string(), aiProcess_Triangulate);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
         return;
     }
-    directory_ = path.parent_path().string();
 
     processNode(scene->mRootNode, scene);
 }
 
 void Model::Draw(Shader shader) {
     for (auto &mesh : meshes_) {
-        mesh.draw(shader);
+        mesh.Draw(shader);
     }
 }
 
@@ -71,16 +70,25 @@ void Model::processNode(aiNode *node, const aiScene *scene) {
     }
 }
 
-Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
+Mesh Model::processMesh(const aiMesh *mesh, const aiScene *scene) {
+    std::cout << "Processing mesh [ " << mesh->mName.C_Str() << " ]\n";
+
     std::vector<VertexStruct> vertices;
     std::vector<unsigned int> indices;
     std::vector<TextureStruct> textures;
 
-
+    // Vertex
+    std::cout << "----Loading vertices\n";
+    std::cout << "--------Loading [" << mesh->mNumVertices << "] vertices" << std::endl;
     for (auto i = 0; i < mesh->mNumVertices; i++) {
         VertexStruct vertex{};
 
-        vertex.position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
+        if (mesh->HasPositions()) {
+            vertex.position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
+        } else {
+            vertex.position = {0.0f, 0.0f, 0.0f};
+        }
+
         if (mesh->HasNormals()) {
             vertex.normal = {mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z};
         } else {
@@ -92,15 +100,23 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
         } else {
             vertex.tex_coords = {0.0f, 0.0f};
         }
+
         vertices.push_back(vertex);
     }
 
-    for (auto i = 0; i < mesh->mNumFaces; i++) {
-        for (unsigned int j = 0; j < mesh->mFaces[i].mNumIndices; j++) {
-            indices.push_back(mesh->mFaces[i].mIndices[j]);
+    // Index
+    std::cout << "----Loading indexes\n";
+    if (mesh->HasFaces()) {
+        std::cout << "--------Loading [" << mesh->mNumFaces << "] faces" << std::endl;
+        for (auto i = 0; i < mesh->mNumFaces; i++) {
+            for (auto j = 0; j < mesh->mFaces[i].mNumIndices; j++) {
+                indices.push_back(mesh->mFaces[i].mIndices[j]);
+            }
         }
     }
 
+    // Texture
+    std::cout << "----Loading textures for mesh\n";
     if (mesh->mMaterialIndex >= 0) {
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
@@ -113,9 +129,10 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
                 material, aiTextureType_SPECULAR, TextureStruct::specular_str
         );
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        std::cout << std::endl;
     }
 
-    return Mesh(vertices, indices, textures);
+    return {std::move(vertices), std::move(indices), std::move(textures)};
 }
 
 std::vector<TextureStruct>
@@ -124,30 +141,34 @@ Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, const std::stri
     for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
         aiString str;
         mat->GetTexture(type, i, &str);
-        std::cout << "Wanted Tex: " << str.C_Str(); //
+        std::cout << "--------Mesh wanded tex: " << str.C_Str() << " \t";
+
         std::filesystem::path texPath = str.C_Str();
-        texPath = "models/backpack/" + texPath.filename().string();
-        bool skip = false;
-        for (unsigned int j = 0; j < textures_loaded.size(); j++) {
-            if (std::strcmp(textures_loaded.at(j).path.c_str(), texPath.string().c_str()) == 0) {
-                std::cout << " Loaded Tex: " << textures_loaded[j].path << std::endl;
-                textures.push_back(textures_loaded.at(j));
-                skip = true;
+        if (texPath.is_absolute()) {
+            texPath = directory_ / texPath.filename();
+        } else {
+            texPath = directory_ / texPath;
+        }
+
+        bool already_loaded = false;
+        for (auto & texture_loaded : textures_loaded) {
+            if (texture_loaded.path == texPath.string()) {
+                std::cout << " Tex exist: " << texture_loaded.path << std::endl;
+                textures.push_back(texture_loaded);
+                already_loaded = true;
                 break;
             }
         }
-        if (!skip) {
-            TextureStruct texture;
-            texture.id = TextureFromFile(texPath.string());
-            texture.type = typeName;
-            texture.path = texPath.string();
-            std::cout << " Loaded Tex: " << texture.path << std::endl; //
-            textures.push_back(texture);
-
-            textures_loaded.push_back(texture);
+        if (!already_loaded) {
+            TextureStruct texture {TextureFromFile(texPath.string()), typeName, texPath.string()};
+            if (texture.id) {
+                std::cout << " Loaded Tex: " << texture.path << std::endl; //
+                textures.push_back(texture);
+                textures_loaded.push_back(texture);
+            }
         }
     }
-    return textures;
+    return std::move(textures);
 }
 
 unsigned int Model::TextureFromFile(const std::string &path, bool gamma) {
@@ -178,6 +199,8 @@ unsigned int Model::TextureFromFile(const std::string &path, bool gamma) {
 
         SOIL_free_image_data(data);
     } else {
+        glDeleteTextures(1, &textureID);
+        textureID = 0;
         std::cout << "Texture failed to load at path: " << path << std::endl;
         SOIL_free_image_data(data);
     }

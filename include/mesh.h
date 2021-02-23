@@ -3,9 +3,13 @@
 #define DRAW_MESH_H
 
 
+#include <utility>
+
 #include "shader.h"
 
 struct VertexStruct {
+
+
     glm::vec3 position;
     glm::vec3 normal;
     glm::vec2 tex_coords;
@@ -15,7 +19,7 @@ struct TextureStruct {
     static constexpr char diffuse_str[] = "texture_diffuse";
     static constexpr char specular_str[] = "texture_specular";
 
-    unsigned int id;
+    unsigned int id = 0;
     std::string type;
     std::string path;
 };
@@ -26,10 +30,15 @@ public:
     std::vector<unsigned int> indices_;
     std::vector<TextureStruct> textures_;
 
-    Mesh(std::vector<VertexStruct> &vertices, std::vector<unsigned int> &indices,
-         std::vector<TextureStruct> &textures);
+    Mesh(std::vector<VertexStruct> &&vertices,
+         std::vector<unsigned int> &&indices,
+         std::vector<TextureStruct> &&textures);
 
-    void draw(Shader shader) const;
+    Mesh(const std::vector<VertexStruct> &vertices,
+         const std::vector<unsigned int> &indices,
+         const std::vector<TextureStruct> &textures);
+
+    void Draw(Shader shader) const;
 
 private:
 
@@ -41,9 +50,21 @@ private:
 };
 
 Mesh::Mesh(
-        std::vector<VertexStruct> &vertices,
-        std::vector<unsigned int> &indices,
-        std::vector<TextureStruct> &textures
+        std::vector<VertexStruct> &&vertices,
+        std::vector<unsigned int> &&indices,
+        std::vector<TextureStruct> &&textures
+) {
+    vertices_ = vertices;
+    indices_ = indices;
+    textures_ = textures;
+
+    setupMesh();
+}
+
+Mesh::Mesh(
+        const std::vector<VertexStruct> &vertices,
+        const std::vector<unsigned int> &indices,
+        const std::vector<TextureStruct> &textures
 ) {
     vertices_ = vertices;
     indices_ = indices;
@@ -78,7 +99,7 @@ void Mesh::setupMesh() {
     glBindVertexArray(0);
 }
 
-void Mesh::draw(Shader shader) const {
+void Mesh::Draw(Shader shader) const {
     unsigned int diffuse_n = 1;
     unsigned int specular_n = 1;
     for (unsigned int i = 0; i < textures_.size(); i++) {
