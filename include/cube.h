@@ -6,14 +6,13 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "texture.h"
 
 class Cube {
 public:
     Cube(glm::vec3 pos, glm::vec4 clr, const Texture *tex) :
             color(clr),
             position(pos),
-            model(glm::translate(glm::mat4(1.0f), pos)),
+            model(glm::scale(glm::translate(glm::mat4(1.0f), pos), glm::vec3(1.0f))),
             texture(tex) {};
 
     static void staticInit(const GLfloat *vertices, GLuint64 ver_size, const GLuint *indices, GLuint64 ind_size);
@@ -24,9 +23,14 @@ public:
 
     [[maybe_unused]] void setPos(glm::vec3);
 
+
     [[nodiscard]] glm::vec3 getPos() const { return position; }
 
-private:
+    [[maybe_unused]] void setModel(const glm::mat4 &);
+
+    [[nodiscard]] const glm::mat4 &getModel() const { return model; }
+
+public:
     glm::vec4 color;
     glm::vec3 position;
     glm::mat4 model;
@@ -54,10 +58,13 @@ void Cube::staticInit(const GLfloat *vertices, GLuint64 ver_size, const GLuint *
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, ind_size, indices, GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid *) nullptr);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *) nullptr);
         glEnableVertexAttribArray(0);
 
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid *) (3 * sizeof(GLfloat)));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(6 * sizeof(GLfloat)));
         glEnableVertexAttribArray(2);
 
         glBindVertexArray(0);
@@ -69,7 +76,8 @@ void Cube::draw(GLuint program, const glm::mat4 &view, const glm::mat4 &projecti
     glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-    glUniform4f(glGetUniformLocation(program, "objectColor"), color.x, color.y, color.z, color.w);
+
+    glUniform3f(glGetUniformLocation(program, "objectColor"), color.x, color.y, color.z);
 
     if(texture != nullptr) {
         texture->use(program);
@@ -89,6 +97,10 @@ void Cube::staticDeinit() {
 void Cube::setPos(glm::vec3 newPos) {
     position = newPos;
     model = glm::translate(glm::mat4(1.0f), newPos);
+}
+
+void Cube::setModel(const glm::mat4 &_model) {
+    model = _model;
 }
 
 

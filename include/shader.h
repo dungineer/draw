@@ -94,6 +94,18 @@ public:
     void use() const {
         glUseProgram(program);
     }
+
+    void setUniform(const std::string &uniform_name, GLfloat value) const {
+        glUniform1f(glGetUniformLocation(program, uniform_name.c_str()), value);
+    }
+
+    void setUniform(const std::string &uniform_name, glm::vec2 values) const {
+        glUniform2f(glGetUniformLocation(program, uniform_name.c_str()), values.x, values.y);
+    }
+
+    void setUniform(const std::string &uniform_name, glm::vec3 values) const {
+        glUniform3f(glGetUniformLocation(program, uniform_name.c_str()), values.x, values.y, values.z);
+    }
 };
 
 

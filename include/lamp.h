@@ -6,14 +6,24 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "texture.h"
 
 class Lamp {
 public:
-    Lamp(glm::vec3 pos, glm::vec4 clr) :
+    Lamp(glm::vec3 pos, glm::vec3 clr, GLuint number) :
             position(pos),
             color(clr),
-            model(glm::scale(glm::translate(glm::mat4(1.0f), pos), glm::vec3(0.2f))) {};
+            formName("pointLights[" + std::to_string(number) + "]"),
+            model(glm::scale(glm::translate(glm::mat4(1.0f), pos), glm::vec3(0.2f))) {
+        lampUniform.position = formName + ".position";
+
+        lampUniform.constant = formName + ".constant";
+        lampUniform.linear = formName + ".linear";
+        lampUniform.quadratic = formName + ".quadratic";
+
+        lampUniform.ambient = formName + ".ambient";
+        lampUniform.diffuse = formName + ".diffuse";
+        lampUniform.specular = formName + ".specular";
+    };
 
     static void staticInit(const GLfloat *vertices, GLuint64 ver_size, const GLuint *indices, GLuint64 ind_size);
 
@@ -21,16 +31,30 @@ public:
 
     void draw(GLuint program, const glm::mat4 &view, const glm::mat4 &projection) const;
 
-    void use(GLuint program) const;
+    void use(GLuint program,  const Camera &) const;
 
-    [[maybe_unused]] void setPos(glm::vec3);
+    [[maybe_unused]] void setPos(glm::vec3 &&);
 
     [[nodiscard]] glm::vec3 getPos() const { return position; }
 
 private:
+    struct {
+        std::string position;
+
+        std::string constant;
+        std::string linear;
+        std::string quadratic;
+
+        std::string ambient;
+        std::string diffuse;
+        std::string specular;
+    } lampUniform;
+
     glm::vec3 position;
-    glm::vec4 color;
+    glm::vec3 color;
     glm::mat4 model;
+
+    std::string formName;
 
     static GLuint VBO;
     static GLuint EBO;
@@ -66,7 +90,7 @@ void Lamp::draw(GLuint program, const glm::mat4 &view, const glm::mat4 &projecti
     glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-    glUniform4f(glGetUniformLocation(program, "lightColor"), color.x, color.y, color.z, color.w);
+    glUniform3f(glGetUniformLocation(program, "lightColor"), color.x, color.y, color.z);
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -79,13 +103,21 @@ void Lamp::staticDeinit() {
     glDeleteBuffers(1, &EBO);
 }
 
-void Lamp::setPos(glm::vec3 newPos) {
+void Lamp::setPos(glm::vec3 &&newPos) {
     position = newPos;
     model = glm::translate(glm::mat4(1.0f), newPos);
 }
 
-void Lamp::use(GLuint program) const {
-    glUniform4f(glGetUniformLocation(program, "lightColor"), color.x, color.y, color.z, color.w);
+void Lamp::use(GLuint program, const Camera &camera) const {
+    glUniform3f(glGetUniformLocation(program, lampUniform.position.c_str()), position.x, position.y, position.z);
+
+    glUniform3f(glGetUniformLocation(program, lampUniform.ambient.c_str()), color.r / 5, color.g / 5, color.b / 5);
+    glUniform3f(glGetUniformLocation(program, lampUniform.diffuse.c_str()), color.r / 2, color.g / 2, color.b / 2);
+    glUniform3f(glGetUniformLocation(program, lampUniform.specular.c_str()), color.r / 1, color.g / 1, color.b / 1);
+
+    glUniform1f(glGetUniformLocation(program, lampUniform.constant.c_str()),  1.0f);
+    glUniform1f(glGetUniformLocation(program, lampUniform.linear.c_str()),  0.09f);
+    glUniform1f(glGetUniformLocation(program, lampUniform.quadratic.c_str()), 0.032f);
 }
 
 

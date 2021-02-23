@@ -29,17 +29,20 @@ public:
 
     void scroll(GLdouble yoffset);
 
-    void update();
-
+    void update(GLuint program);
 
     [[nodiscard]] const glm::mat4 &getView() const { return view; }
 
     [[nodiscard]] const glm::mat4 &getProjection() const { return projection; }
 
+    [[nodiscard]] const glm::vec3 &getFront() const { return front; }
+
+    [[nodiscard]] const glm::vec3 &getPosition() const { return pos; }
+
 private:
     GLfloat yaw = -90.0f;
     GLfloat pitch = 0.0f;
-    GLfloat speed = 0.025f;
+    GLfloat speed = 0.015f;
     GLfloat sense = 0.05f;
     GLfloat zoom = 45.0f;
 
@@ -89,7 +92,9 @@ void Camera::scroll(GLdouble yoffset) {
         zoom = 45.0f;
 }
 
-void Camera::update() {
+void Camera::update(GLuint program) {
+    glUniform3f(glGetUniformLocation(program, "viewPos"), pos.x, pos.y, pos.z);
+
     projection = glm::perspective(glm::radians(zoom), width / height, 0.1f, 100.0f);
     view = glm::lookAt(pos, pos + front, up);
 
@@ -116,6 +121,12 @@ void Camera::update() {
 
     if (keys[GLFW_KEY_LEFT_CONTROL]) {
         pos.y -= speed;
+    }
+
+    if (keys[GLFW_KEY_LEFT_SHIFT]) {
+        speed = 0.03;
+    } else {
+        speed = 0.015;
     }
 }
 
