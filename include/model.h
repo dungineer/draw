@@ -22,7 +22,7 @@ public:
         loadModel(path);
     }
 
-    void Draw(Shader shader);
+    void Draw(const Shader &shader);
 
 private:
     std::vector<Mesh> meshes_;
@@ -53,7 +53,7 @@ void Model::loadModel(const std::filesystem::path &path) {
     processNode(scene->mRootNode, scene);
 }
 
-void Model::Draw(Shader shader) {
+void Model::Draw(const Shader &shader) {
     for (auto &mesh : meshes_) {
         mesh.Draw(shader);
     }

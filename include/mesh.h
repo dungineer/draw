@@ -38,7 +38,7 @@ public:
          const std::vector<unsigned int> &indices,
          const std::vector<TextureStruct> &textures);
 
-    void Draw(Shader shader) const;
+    void Draw(const Shader &shader) const;
 
 private:
 
@@ -79,8 +79,8 @@ void Mesh::setupMesh() {
     glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(VertexStruct), &vertices_[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -88,10 +88,10 @@ void Mesh::setupMesh() {
 
     // vertex positions
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexStruct), (void *) nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexStruct), (void *)nullptr);
     // vertex normals
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexStruct), (void *) offsetof(VertexStruct, normal));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexStruct), (void *)offsetof(VertexStruct, normal));
     // vertex texture coords
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexStruct), (void *) offsetof(VertexStruct, tex_coords));
@@ -99,10 +99,10 @@ void Mesh::setupMesh() {
     glBindVertexArray(0);
 }
 
-void Mesh::Draw(Shader shader) const {
+void Mesh::Draw(const Shader &shader) const {
     unsigned int diffuse_n = 1;
     unsigned int specular_n = 1;
-    for (unsigned int i = 0; i < textures_.size(); i++) {
+    for (auto i = 0; i < textures_.size(); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
         std::string texture_name = "material.";
 

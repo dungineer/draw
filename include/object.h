@@ -19,6 +19,8 @@ public:
 
     void Draw(const Shader &shader, const Camera &camera) const;
 
+    void setScale(glm::vec3);
+
     void setPos(glm::vec3);
 
     [[nodiscard]] glm::vec3 getPos() const { return position_; }
@@ -43,6 +45,11 @@ void Object::Draw(const Shader &shader, const Camera &camera) const {
 
 void Object::setPos(glm::vec3 position) {
     position_ = position;
+    model_matrix_ = glm::scale(glm::translate(glm::mat4(1.0f), position_), scale_);
+}
+
+void Object::setScale(glm::vec3 scale) {
+    scale_ = scale;
     model_matrix_ = glm::scale(glm::translate(glm::mat4(1.0f), position_), scale_);
 }
 

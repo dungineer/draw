@@ -1,9 +1,9 @@
 .idea
 cmake-build-debug
-cmake-build-release
+cmake-build-release/*
 !cmake-build-release/shaders
 textures
-lib
+lib/
 include/GL
 include/glm
 include/GLFW

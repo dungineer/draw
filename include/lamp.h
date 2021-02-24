@@ -29,7 +29,7 @@ public:
 
     static void staticDeinit();
 
-    void draw(GLuint program, const glm::mat4 &view, const glm::mat4 &projection) const;
+    void draw(const Shader &shader, const Camera &camera) const;
 
     void use(const Shader &shader) const;
 
@@ -86,11 +86,11 @@ void Lamp::staticInit(const GLfloat *vertices, GLuint64 ver_size, const GLuint *
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Lamp::draw(GLuint program, const glm::mat4 &view, const glm::mat4 &projection) const {
-    glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model_));
-    glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-    glUniform3f(glGetUniformLocation(program, "lightColor"), color_.x, color_.y, color_.z);
+void Lamp::draw(const Shader &shader, const Camera &camera) const {
+    glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(model_));
+    glUniformMatrix4fv(glGetUniformLocation(shader.program, "view"), 1, GL_FALSE, glm::value_ptr(camera.getView()));
+    glUniformMatrix4fv(glGetUniformLocation(shader.program, "projection"), 1, GL_FALSE, glm::value_ptr(camera.getView()));
+    glUniform3f(glGetUniformLocation(shader.program, "lightColor"), color_.x, color_.y, color_.z);
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
