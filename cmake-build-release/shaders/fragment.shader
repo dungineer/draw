@@ -41,7 +41,6 @@ uniform PointLight pointLights[POINT_LIGHTS_NR];
 #define DIR_LIGHTS_NR 1
 uniform DirLight dirLights[DIR_LIGHTS_NR];
 
-uniform vec3 objectColor;
 uniform vec3 viewPos;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
