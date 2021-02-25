@@ -17,36 +17,64 @@ class Shader {
 public:
     GLuint program;
 
-    Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
+    Shader(const GLchar *vertexPath, const GLchar *geometryPath, const GLchar *fragmentPath) {
 
         std::string vertexCode;
+        std::string geometryCode;
         std::string fragmentCode;
+
         std::ifstream vertexFile;
+        std::ifstream geometryFile;
         std::ifstream fragmentFile;
 
         vertexFile.exceptions(std::ifstream::badbit);
+        geometryFile.exceptions(std::ifstream::badbit);
         fragmentFile.exceptions(std::ifstream::badbit);
-        try {
-            vertexFile.open(vertexPath);
-            fragmentFile.open(fragmentPath);
-            std::stringstream vShaderStream;
-            std::stringstream fShaderStream;
 
-            vShaderStream << vertexFile.rdbuf();
-            fShaderStream << fragmentFile.rdbuf();
+        if (vertexPath != nullptr) {
+            try {
+                vertexFile.open(vertexPath);
+                std::stringstream vShaderStream;
+                vShaderStream << vertexFile.rdbuf();
+                vertexFile.close();
+                vertexCode = vShaderStream.str();
+            } catch (std::ifstream::failure &e) {
+                std::cout << "ERROR::SHADER::VERTEX::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+            } catch (...) {
+                std::cout << "ERROR::SHADER::VERTEX::UNKNOWN_ERROR" << std::endl;
+            }
+        }
 
-            vertexFile.close();
-            fragmentFile.close();
+        if (geometryPath != nullptr) {
+            try {
+                geometryFile.open(geometryPath);
+                std::stringstream gShaderStream;
+                gShaderStream << geometryFile.rdbuf();
+                geometryFile.close();
+                geometryCode = gShaderStream.str();
+            } catch (std::ifstream::failure &e) {
+                std::cout << "ERROR::SHADER::GEOMETRY::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+            } catch (...) {
+                std::cout << "ERROR::SHADER::GEOMETRY::UNKNOWN_ERROR" << std::endl;
+            }
+        }
 
-            vertexCode = vShaderStream.str();
-            fragmentCode = fShaderStream.str();
-        } catch (std::ifstream::failure & e) {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-        } catch (...) {
-            std::cout << "ERROR::SHADER::UNKNOWN_ARRAY" << std::endl;
+        if (fragmentPath != nullptr) {
+            try {
+                fragmentFile.open(fragmentPath);
+                std::stringstream fShaderStream;
+                fShaderStream << fragmentFile.rdbuf();
+                fragmentFile.close();
+                fragmentCode = fShaderStream.str();
+            } catch (std::ifstream::failure &e) {
+                std::cout << "ERROR::SHADER::FRAGMENT::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+            } catch (...) {
+                std::cout << "ERROR::SHADER::FRAGMENT::UNKNOWN_ARRAY" << std::endl;
+            }
         }
 
         const GLchar *vShaderCode = vertexCode.c_str();
+        const GLchar *gShaderCode = geometryCode.c_str();
         const GLchar *fShaderCode = fragmentCode.c_str();
 
         GLint success;
@@ -63,6 +91,18 @@ public:
             std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
         }
 
+        GLuint geometry;
+        geometry = glCreateShader(GL_GEOMETRY_SHADER);
+        glShaderSource(geometry, 1, &gShaderCode, nullptr);
+        glCompileShader(geometry);
+
+        glGetShaderiv(geometry, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            GLchar infoLog[512];
+            glGetShaderInfoLog(geometry, 512, nullptr, infoLog);
+            std::cout << "ERROR::SHADER::GEOMETRY::COMPILATION_FAILED\n" << infoLog << std::endl;
+        }
+
         GLuint fragment;
         fragment = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fragment, 1, &fShaderCode, nullptr);
@@ -77,6 +117,9 @@ public:
 
         program = glCreateProgram();
         glAttachShader(program, vertex);
+        if (geometryPath != nullptr) {
+            glAttachShader(program, geometry);
+        }
         glAttachShader(program, fragment);
         glLinkProgram(program);
 
@@ -88,6 +131,7 @@ public:
         }
 
         glDeleteShader(vertex);
+        glDeleteShader(geometry);
         glDeleteShader(fragment);
     }
 

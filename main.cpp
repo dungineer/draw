@@ -184,10 +184,10 @@ int main() {
     global_camera = new Camera({0.0f, 0.0f, 0.0f}, screen_width, screen_height);
 
     Camera &camera = *global_camera;
-    Shader shader("shaders/vertex.shader", "shaders/fragment.shader");
-    Shader shader_lamp("shaders/vertex_lamp.shader", "shaders/fragment_lamp.shader");
-    Shader render_shader("shaders/vertex_render.shader", "shaders/fragment_render.shader");
-    Shader skybox_shader("shaders/vertex_skybox.shader", "shaders/fragment_skybox.shader");
+    Shader shader("shaders/vertex.shader", "shaders/geometry.shader", "shaders/fragment.shader");
+    Shader shader_lamp("shaders/vertex_lamp.shader", nullptr, "shaders/fragment_lamp.shader");
+    Shader render_shader("shaders/vertex_render.shader", nullptr, "shaders/fragment_render.shader");
+    Shader skybox_shader("shaders/vertex_skybox.shader", nullptr, "shaders/fragment_skybox.shader");
 
     Lamp::staticInit(vertices_lamp, sizeof(vertices_lamp), indices, sizeof(indices));
     Lamp lamp(glm::vec3(0.0f, 3.0f, -3.0f), glm::vec3(0.711f, 0.815f, 0.894f), 0);
@@ -252,6 +252,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
+        shader.setUniform("time", glfwGetTime());
         glEnable(GL_DEPTH_TEST);
         camera.update(shader);
 
