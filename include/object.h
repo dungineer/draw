@@ -11,9 +11,9 @@
 
 class Object {
 public:
-    Object(const glm::vec3 position, Model *const model, const glm::vec3 scale = glm::vec3(1.0f)) :
+    Object(const glm::vec3 position, Model &model, const glm::vec3 scale = glm::vec3(1.0f)) :
             position_(position),
-            model_(model),
+            model_(&model),
             scale_(scale),
             model_matrix_(glm::scale(glm::translate(glm::mat4(1.0f), position), scale)) {};
 
@@ -32,7 +32,7 @@ private:
     glm::vec3 scale_;
     glm::mat4 model_matrix_;
 
-    Model *const model_;
+    Model *model_;
 };
 
 

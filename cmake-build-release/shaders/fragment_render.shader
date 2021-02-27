@@ -4,7 +4,7 @@ out vec4 FragColor;
 
 in vec2 TexCoords;
 
-uniform sampler2D screenTexture;
+uniform sampler2DMS screenTexture;
 
 const float offset = 1.0 / 300.0;
 
@@ -32,11 +32,15 @@ void main()
     vec3 sampleTex[9];
     for(int i = 0; i < 9; i++)
     {
-        sampleTex[i] = vec3(texture(screenTexture, TexCoords.st + offsets[i]));
+        vec3 s1 = vec3(texelFetch(screenTexture, ivec2((TexCoords + offsets[i]).x * 1200, (TexCoords + offsets[i]).y * 800), 0));
+        vec3 s2 = vec3(texelFetch(screenTexture, ivec2((TexCoords + offsets[i]).x * 1200, (TexCoords + offsets[i]).y * 800), 1));
+        vec3 s3 = vec3(texelFetch(screenTexture, ivec2((TexCoords + offsets[i]).x * 1200, (TexCoords + offsets[i]).y * 800), 2));
+        vec3 s4 = vec3(texelFetch(screenTexture, ivec2((TexCoords + offsets[i]).x * 1200, (TexCoords + offsets[i]).y * 800), 3));
+        sampleTex[i] = (s1+s2+s3+s4) / 4;
     }
     vec3 col = vec3(0.0);
     for(int i = 0; i < 9; i++)
     col += sampleTex[i] * kernel[i];
 
-    FragColor = vec4(col, 1.0);
+    FragColor = vec4(col, 0);
 }
