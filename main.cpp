@@ -292,7 +292,7 @@ int main() {
 
         glBindVertexArray(skyboxVAO);
         glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
 
         glDepthFunc(GL_LESS);
@@ -324,6 +324,7 @@ int main() {
         //
         glBindVertexArray(quadVAO);
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texColorBuffer);
+
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glBindVertexArray(0);

@@ -36,7 +36,7 @@ void main()
         vec3 s2 = vec3(texelFetch(screenTexture, ivec2((TexCoords + offsets[i]).x * 1200, (TexCoords + offsets[i]).y * 800), 1));
         vec3 s3 = vec3(texelFetch(screenTexture, ivec2((TexCoords + offsets[i]).x * 1200, (TexCoords + offsets[i]).y * 800), 2));
         vec3 s4 = vec3(texelFetch(screenTexture, ivec2((TexCoords + offsets[i]).x * 1200, (TexCoords + offsets[i]).y * 800), 3));
-        sampleTex[i] = (s1+s2+s3+s4) / 4;
+        sampleTex[i] = (s1 + s2 + s3 + s4) / 4;
     }
     vec3 col = vec3(0.0);
     for(int i = 0; i < 9; i++)
