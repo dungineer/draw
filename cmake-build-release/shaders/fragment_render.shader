@@ -4,43 +4,23 @@ out vec4 FragColor;
 
 in vec2 TexCoords;
 
-uniform sampler2DMS screenTexture;
-
-const float offset = 1.0 / 300.0;
+uniform sampler2D screenTexture;
+uniform sampler2D screenTextureBright;
 
 void main()
 {
+    vec3 color = vec3(texture(screenTexture, TexCoords));
 
-    vec2 offsets[9] = vec2[](
-    vec2(-offset,  offset), // top-left
-    vec2( 0.0f,    offset), // top-center
-    vec2( offset,  offset), // top-right
-    vec2(-offset,  0.0f),   // center-left
-    vec2( 0.0f,    0.0f),   // center-center
-    vec2( offset,  0.0f),   // center-right
-    vec2(-offset, -offset), // bottom-left
-    vec2( 0.0f,   -offset), // bottom-center
-    vec2( offset, -offset)  // bottom-right
-    );
+    vec3 bloom_color = vec3(0.0);
+    float weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
+    float offset = vec2(1.0 / textureSize(screenTexture, 0)).x;
 
-    float kernel[9] = float[](
-    0, 0, 0,
-    0, 1, 0,
-    0, 0, 0
-    );
-
-    vec3 sampleTex[9];
-    for(int i = 0; i < 9; i++)
-    {
-        vec3 s1 = vec3(texelFetch(screenTexture, ivec2((TexCoords + offsets[i]).x * 1200, (TexCoords + offsets[i]).y * 800), 0));
-        vec3 s2 = vec3(texelFetch(screenTexture, ivec2((TexCoords + offsets[i]).x * 1200, (TexCoords + offsets[i]).y * 800), 1));
-        vec3 s3 = vec3(texelFetch(screenTexture, ivec2((TexCoords + offsets[i]).x * 1200, (TexCoords + offsets[i]).y * 800), 2));
-        vec3 s4 = vec3(texelFetch(screenTexture, ivec2((TexCoords + offsets[i]).x * 1200, (TexCoords + offsets[i]).y * 800), 3));
-        sampleTex[i] = (s1 + s2 + s3 + s4) / 4;
+    if (length(vec3(texture(screenTextureBright, TexCoords))) > 0.0) {
+        for (int i = 0; i < 5; i++) {
+            bloom_color += 1.63 * weight[i] * vec3(texture(screenTexture, TexCoords + vec2(offset * (i - 2), 0.0)));
+        }
+        color = bloom_color;
     }
-    vec3 col = vec3(0.0);
-    for(int i = 0; i < 9; i++)
-    col += sampleTex[i] * kernel[i];
 
-    FragColor = vec4(col, 0);
+    FragColor = vec4(color, 1.0);
 }

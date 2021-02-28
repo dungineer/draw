@@ -91,18 +91,6 @@ public:
             std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
         }
 
-        GLuint geometry;
-        geometry = glCreateShader(GL_GEOMETRY_SHADER);
-        glShaderSource(geometry, 1, &gShaderCode, nullptr);
-        glCompileShader(geometry);
-
-        glGetShaderiv(geometry, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            GLchar infoLog[512];
-            glGetShaderInfoLog(geometry, 512, nullptr, infoLog);
-            std::cout << "ERROR::SHADER::GEOMETRY::COMPILATION_FAILED\n" << infoLog << std::endl;
-        }
-
         GLuint fragment;
         fragment = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fragment, 1, &fShaderCode, nullptr);
@@ -117,9 +105,6 @@ public:
 
         program = glCreateProgram();
         glAttachShader(program, vertex);
-        if (geometryPath != nullptr) {
-            glAttachShader(program, geometry);
-        }
         glAttachShader(program, fragment);
         glLinkProgram(program);
 
@@ -131,7 +116,6 @@ public:
         }
 
         glDeleteShader(vertex);
-        glDeleteShader(geometry);
         glDeleteShader(fragment);
     }
 
@@ -149,6 +133,18 @@ public:
 
     void setUniform(const std::string &uniform_name, glm::vec3 values) const {
         glUniform3f(glGetUniformLocation(program, uniform_name.c_str()), values.x, values.y, values.z);
+    }
+
+    void setUniform(const std::string &uniform_name, glm::vec4 values) const {
+        glUniform4f(glGetUniformLocation(program, uniform_name.c_str()), values.x, values.y, values.z, values.w);
+    }
+
+    void setUniform(const std::string &uniform_name, glm::mat4 values) const {
+        glUniformMatrix4fv(glGetUniformLocation(program, uniform_name.c_str()), 1, GL_FALSE, glm::value_ptr(values));
+    }
+
+    void setUniformInt(const std::string &uniform_name, GLint value) const {
+        glUniform1i(glGetUniformLocation(program, uniform_name.c_str()), value);
     }
 };
 

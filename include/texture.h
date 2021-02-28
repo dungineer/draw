@@ -1,6 +1,3 @@
-//
-// Created by AlNov on 07.02.2021.
-//
 
 #ifndef DRAW_TEXTURE_H
 #define DRAW_TEXTURE_H
@@ -8,62 +5,69 @@
 #include <SOIL/SOIL.h>
 #include <GL/glew.h>
 
-
 class Texture {
 public:
-    explicit Texture(const std::string &texturePath1, const std::string &texturePath2, const std::string &texturePath3) {
+    explicit Texture(const std::filesystem::path &diffuse_path,
+                     const std::filesystem::path &normal_path,
+                     const std::filesystem::path &parallax_path) {
         int width = 0;
         int height = 0;
 
-        // First
-        unsigned char *image = SOIL_load_image(
-                texturePath1.c_str(), &width, &height, nullptr, SOIL_LOAD_RGB
+        // Diffuse
+        auto image = SOIL_load_image(
+                diffuse_path.string().c_str(), &width, &height, nullptr, SOIL_LOAD_RGB
         );
-        glGenTextures(1, &texture1);
-        glBindTexture(GL_TEXTURE_2D, texture1);
+        glGenTextures(1, &diffuse_tex_);
+        glBindTexture(GL_TEXTURE_2D, diffuse_tex_);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
         glGenerateMipmap(GL_TEXTURE_2D);
         SOIL_free_image_data(image);
 
-        // Second
+        // Normal
         image = SOIL_load_image(
-                texturePath2.c_str(), &width, &height, nullptr, SOIL_LOAD_RGB
+                normal_path.string().c_str(), &width, &height, nullptr, SOIL_LOAD_RGB
         );
-        glGenTextures(1, &texture2);
-        glBindTexture(GL_TEXTURE_2D, texture2);
+        glGenTextures(1, &normal_tex_);
+        glBindTexture(GL_TEXTURE_2D, normal_tex_);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
         glGenerateMipmap(GL_TEXTURE_2D);
         SOIL_free_image_data(image);
 
-        // Third
+        // Parallax
         image = SOIL_load_image(
-                texturePath3.c_str(), &width, &height, nullptr, SOIL_LOAD_RGB
+                parallax_path.string().c_str(), &width, &height, nullptr, SOIL_LOAD_RGB
         );
-        glGenTextures(1, &texture3);
-        glBindTexture(GL_TEXTURE_2D, texture3);
+        glGenTextures(1, &parallax_tex_);
+        glBindTexture(GL_TEXTURE_2D, parallax_tex_);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
         glGenerateMipmap(GL_TEXTURE_2D);
         SOIL_free_image_data(image);
     }
 
-    void use(GLuint program) const {
+    void use(const Shader &shader) const {
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glUniform1i(glGetUniformLocation(program, "material.diffuse"), 0);
+        glBindTexture(GL_TEXTURE_2D, diffuse_tex_);
+        glUniform1i(glGetUniformLocation(shader.program, diffuse_), 0);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
-        glUniform1i(glGetUniformLocation(program, "material.specular"), 1);
+        glBindTexture(GL_TEXTURE_2D, normal_tex_);
+        glUniform1i(glGetUniformLocation(shader.program, specular_), 1);
 
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, texture3);
-        glUniform1i(glGetUniformLocation(program, "material.emission"), 2);
+        glBindTexture(GL_TEXTURE_2D, parallax_tex_);
+        glUniform1i(glGetUniformLocation(shader.program, parallax_), 2);
+
+        glActiveTexture(GL_TEXTURE0);
     }
 
 private:
-    GLuint texture1 = 0;
-    GLuint texture2 = 0;
-    GLuint texture3 = 0;
+    static constexpr char diffuse_[] = "diffuseMap";
+    static constexpr char specular_[] = "normalMap";
+    static constexpr char parallax_[] = "depthMap";
+
+    unsigned int diffuse_tex_ = 0;
+    unsigned int normal_tex_ = 0;
+    unsigned int parallax_tex_ = 0;
 };
 
 

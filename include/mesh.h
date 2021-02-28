@@ -102,7 +102,7 @@ void Mesh::setupMesh() {
 void Mesh::Draw(const Shader &shader) const {
     unsigned int diffuse_n = 1;
     unsigned int specular_n = 1;
-    for (auto i = 0; i < textures_.size(); i++) {
+    for (unsigned int i = 0; i < textures_.size(); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
         std::string texture_name = "material.";
 
@@ -114,7 +114,7 @@ void Mesh::Draw(const Shader &shader) const {
             texture_name += std::to_string(specular_n);
         }
 
-        shader.setUniform(texture_name, i);
+        shader.setUniformInt(texture_name, i);
         glBindTexture(GL_TEXTURE_2D, textures_[i].id);
     }
     glActiveTexture(GL_TEXTURE0);

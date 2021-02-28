@@ -17,7 +17,7 @@ public:
             scale_(scale),
             model_matrix_(glm::scale(glm::translate(glm::mat4(1.0f), position), scale)) {};
 
-    void Draw(const Shader &shader, const Camera &camera) const;
+    void Draw(const Shader &shader, const glm::mat4 &view, const glm::mat4 &projection) const;
 
     void setScale(glm::vec3);
 
@@ -36,10 +36,10 @@ private:
 };
 
 
-void Object::Draw(const Shader &shader, const Camera &camera) const {
+void Object::Draw(const Shader &shader, const glm::mat4 &view, const glm::mat4 &projection) const {
     glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(model_matrix_));
-    glUniformMatrix4fv(glGetUniformLocation(shader.program, "view"), 1, GL_FALSE, glm::value_ptr(camera.getView()));
-    glUniformMatrix4fv(glGetUniformLocation(shader.program, "projection"), 1, GL_FALSE, glm::value_ptr(camera.getProjection()));
+    glUniformMatrix4fv(glGetUniformLocation(shader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader.program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
     model_->Draw(shader);
 }
 
