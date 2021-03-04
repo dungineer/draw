@@ -4,6 +4,7 @@
 
 #include <SOIL/SOIL.h>
 #include <GL/glew.h>
+#include <filesystem>
 
 class Texture {
 public:

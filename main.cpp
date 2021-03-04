@@ -4,7 +4,7 @@
 #define GLEW_STATIC
 
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <glfw3/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -12,7 +12,6 @@
 #include "shader.h"
 #include "camera.h"
 #include "lamp.h"
-#include "model.h"
 #include "texture.h"
 
 static const GLint screen_width = 1200;
@@ -156,9 +155,9 @@ int main() {
     Lamp lamp({-0.5f, 0.0f, 1.0f}, {1.0f, 0.843f, 0.0f, 1.0f}, glm::vec3(0.1f));
     Lamp lamp_g({0.5f, 0.5f, 1.0f}, {0.568f, 0.117f, 0.258f, 1.0f}, glm::vec3(0.1f));
 
-    Texture brick("textures/diffuse.jpg",
+    Texture brick{static_cast<const std::filesystem::path>("textures/diffuse.jpg"),
                   "textures/normals.jpg",
-                  "textures/parallax.jpg");
+                  "textures/parallax.jpg"};
 
     GLdouble t = glfwGetTime();
     GLdouble tt = glfwGetTime();
