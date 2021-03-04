@@ -36,8 +36,16 @@ add_executable(${PROJECT_NAME}
         )
 
 add_subdirectory(lib/soil)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include lib/soil/inc)
-target_link_libraries(${PROJECT_NAME} ${glew_PATH}/glew32s.lib ${glfw3_PATH}/glfw3.lib ${OPENGL_LIBRARIES} soil)
+target_include_directories(${PROJECT_NAME} PUBLIC
+        ${CMAKE_SOURCE_DIR}/include
+        lib/soil/inc
+        )
+
+target_link_libraries(${PROJECT_NAME}
+        ${glew_PATH}/glew32s.lib
+        ${glfw3_PATH}/glfw3.lib
+        ${OPENGL_LIBRARIES} soil
+        )
 
 # Install shaders and textures
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
