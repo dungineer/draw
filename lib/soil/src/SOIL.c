@@ -1021,7 +1021,7 @@ unsigned int
 		} else
 		{
 			/*	can't do it, and that is a breakable offense (uv coords use pixels instead of [0,1]!)	*/
-			result_string_pointer = "Texture Rectangle extension unsupported";
+			result_string_pointer = "Texture2D Rectangle extension unsupported";
 			return 0;
 		}
 	}

@@ -24,7 +24,7 @@
 	- PNG		load
 	- JPG		load
 
-	OpenGL Texture Features:
+	OpenGL Texture2D Features:
 	- resample to power-of-two sizes
 	- MIPmap generation
 	- compressed texture S3TC formats (if supported)
