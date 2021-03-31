@@ -1,7 +1,3 @@
-//
-// Created by AlNov on 01.02.2021.
-//
-
 #ifndef DRAW_SHADER_H
 #define DRAW_SHADER_H
 
@@ -18,21 +14,20 @@ class Shader {
 public:
     Shader(const Shader &) = delete;
 
-    Shader &operator=(const Shader &) = delete;
+    Shader(const Shader &&shader) noexcept
+            : id_(shader.id_) {}
 
     Shader &operator=(Shader &&shader) noexcept {
         id_ = shader.id_;
         return *this;
     }
 
-    Shader(const Shader &&shader) noexcept: id_(shader.id_) {}
+    explicit Shader(const std::filesystem::path &vertexPath,
+                    const std::filesystem::path &fragmentPath);
 
-    [[maybe_unused]] explicit Shader(const std::filesystem::path &vertexPath,
-                                     const std::filesystem::path &fragmentPath);
-
-    [[maybe_unused]] explicit Shader(const std::filesystem::path &vertexPath,
-                                     const std::filesystem::path &geometryPath,
-                                     const std::filesystem::path &fragmentPath);
+    explicit Shader(const std::filesystem::path &vertexPath,
+                    const std::filesystem::path &geometryPath,
+                    const std::filesystem::path &fragmentPath);
 
     void use() const {
         glUseProgram(id_);
@@ -42,27 +37,27 @@ public:
         return id_;
     }
 
-    [[maybe_unused]] void setUniform(const std::string &uniform_name, GLint value) const {
+    void setUniform(const std::string &uniform_name, GLint value) const {
         glUniform1i(glGetUniformLocation(id_, uniform_name.c_str()), value);
     }
 
-    [[maybe_unused]] void setUniform(const std::string &uniform_name, GLfloat value) const {
+    void setUniform(const std::string &uniform_name, GLfloat value) const {
         glUniform1f(glGetUniformLocation(id_, uniform_name.c_str()), value);
     }
 
-    [[maybe_unused]] void setUniform(const std::string &uniform_name, const glm::vec2 &values) const {
+    void setUniform(const std::string &uniform_name, const glm::vec2 &values) const {
         glUniform2f(glGetUniformLocation(id_, uniform_name.c_str()), values.x, values.y);
     }
 
-    [[maybe_unused]] void setUniform(const std::string &uniform_name, const glm::vec3 &values) const {
+    void setUniform(const std::string &uniform_name, const glm::vec3 &values) const {
         glUniform3f(glGetUniformLocation(id_, uniform_name.c_str()), values.x, values.y, values.z);
     }
 
-    [[maybe_unused]] void setUniform(const std::string &uniform_name, const glm::vec4 &values) const {
+    void setUniform(const std::string &uniform_name, const glm::vec4 &values) const {
         glUniform4f(glGetUniformLocation(id_, uniform_name.c_str()), values.x, values.y, values.z, values.w);
     }
 
-    [[maybe_unused]] void setUniform(const std::string &uniform_name, const glm::mat4 &values) const {
+    void setUniform(const std::string &uniform_name, const glm::mat4 &values) const {
         glUniformMatrix4fv(glGetUniformLocation(id_, uniform_name.c_str()), 1, GL_FALSE, glm::value_ptr(values));
     }
 

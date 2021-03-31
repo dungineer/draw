@@ -5,7 +5,7 @@
 #include <sstream>
 
 
-[[maybe_unused]] Shader::Shader(const std::filesystem::path &vertexPath,
+Shader::Shader(const std::filesystem::path &vertexPath,
                                 const std::filesystem::path &fragmentPath) {
 
     unsigned int vertexID = compileShader(vertexPath, GL_VERTEX_SHADER);
@@ -13,7 +13,7 @@
     id_ = linkShaderProgram({vertexID, fragmentID});
 }
 
-[[maybe_unused]] Shader::Shader(const std::filesystem::path &vertexPath,
+Shader::Shader(const std::filesystem::path &vertexPath,
                                 const std::filesystem::path &geometryPath,
                                 const std::filesystem::path &fragmentPath) {
 
