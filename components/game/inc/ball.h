@@ -20,6 +20,8 @@ public:
 
 protected:
     void reflectFrom(AbstractObject &object);
+
+    void reflectFrom(Platform &object);
 };
 
 
